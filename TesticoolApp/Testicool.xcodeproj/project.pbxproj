@@ -1,4 +1,4 @@
-// !UTF8*
+// !$*UTF8*$!
 {
 	archiveVersion = 1;
 	classes = {
@@ -8,25 +8,25 @@
 
 /* Begin PBXBuildFile section */
 		49A929115EEB42A681541FDE /* TesticoolApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6339E7ABE5E94E78913EEF8B /* TesticoolApp.swift */; };
+		6D9E49A52E0E405B870B1F7E /* StatusView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2AC82EB0127D4B24BD67738D /* StatusView.swift */; };
 		739CC931FCA14187914AFD4D /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 629262EAAEE840C3ACEB6BE3 /* ContentView.swift */; };
+		8B5A9969F65D4059B85D8952 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9A1C36C686414DC39A8DC664 /* SettingsView.swift */; };
 		9A91C1DC877E4DEC873C9F8B /* BluetoothManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C34CBC2AD7E436A8F3ED123 /* BluetoothManager.swift */; };
 		A289601B9DDD440DBD7B5262 /* DeviceState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7DA09B2CA31748209EED1963 /* DeviceState.swift */; };
 		ADB55532D43D4CB3A2576B65 /* StatusParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2C457B8B0A324C8995DE24F7 /* StatusParser.swift */; };
-		EB356F8768CB42FCA923458D /* PumpControlView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 25CC4A9FDE1D4A30992B79F5 /* PumpControlView.swift */; };
-		6D9E49A52E0E405B870B1F7E /* StatusView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2AC82EB0127D4B24BD67738D /* StatusView.swift */; };
-		8B5A9969F65D4059B85D8952 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9A1C36C686414DC39A8DC664 /* SettingsView.swift */; };
 		B57BCFF9AAD9405FA0681A4E /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = FEC9C6F543594008B08BFB32 /* Assets.xcassets */; };
+		EB356F8768CB42FCA923458D /* PumpControlView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 25CC4A9FDE1D4A30992B79F5 /* PumpControlView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
-		21090B9BEF9946E48A21D5CE /* Testicool.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Testicool.app; sourceTree = BUILT_PRODUCTS_DIR; };
-		6339E7ABE5E94E78913EEF8B /* TesticoolApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TesticoolApp.swift; sourceTree = "<group>"; };
-		629262EAAEE840C3ACEB6BE3 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		0C34CBC2AD7E436A8F3ED123 /* BluetoothManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BluetoothManager.swift; sourceTree = "<group>"; };
-		7DA09B2CA31748209EED1963 /* DeviceState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceState.swift; sourceTree = "<group>"; };
-		2C457B8B0A324C8995DE24F7 /* StatusParser.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StatusParser.swift; sourceTree = "<group>"; };
+		21090B9BEF9946E48A21D5CE /* Testicool.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Testicool.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		25CC4A9FDE1D4A30992B79F5 /* PumpControlView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PumpControlView.swift; sourceTree = "<group>"; };
 		2AC82EB0127D4B24BD67738D /* StatusView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StatusView.swift; sourceTree = "<group>"; };
+		2C457B8B0A324C8995DE24F7 /* StatusParser.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StatusParser.swift; sourceTree = "<group>"; };
+		629262EAAEE840C3ACEB6BE3 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
+		6339E7ABE5E94E78913EEF8B /* TesticoolApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TesticoolApp.swift; sourceTree = "<group>"; };
+		7DA09B2CA31748209EED1963 /* DeviceState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceState.swift; sourceTree = "<group>"; };
 		9A1C36C686414DC39A8DC664 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
 		EFCC2C7C8033478BBD9470B2 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		FEC9C6F543594008B08BFB32 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
@@ -46,31 +46,9 @@
 		62472AA5FAD145D8B7B1F0EF = {
 			isa = PBXGroup;
 			children = (
-				E5F47691E5994C4C8FC1CFDF /* Testicool */,
+				E5F47691E5994C4C8FC1CFDF /* . */,
 				CB3762D89D714C59A10B97E5 /* Products */,
 			);
-			sourceTree = "<group>";
-		};
-		CB3762D89D714C59A10B97E5 /* Products */ = {
-			isa = PBXGroup;
-			children = (
-				21090B9BEF9946E48A21D5CE /* Testicool.app */,
-			);
-			name = Products;
-			sourceTree = "<group>";
-		};
-		E5F47691E5994C4C8FC1CFDF /* Testicool */ = {
-			isa = PBXGroup;
-			children = (
-				6339E7ABE5E94E78913EEF8B /* TesticoolApp.swift */,
-				629262EAAEE840C3ACEB6BE3 /* ContentView.swift */,
-				9567C4C1B49746B28F61B6FD /* Managers */,
-				F5D7597DE9394B7E9E1AF545 /* Models */,
-				C6800657033947E6ACF1C288 /* Views */,
-				FEC9C6F543594008B08BFB32 /* Assets.xcassets */,
-				EFCC2C7C8033478BBD9470B2 /* Info.plist */,
-			);
-			path = ".";
 			sourceTree = "<group>";
 		};
 		9567C4C1B49746B28F61B6FD /* Managers */ = {
@@ -81,15 +59,6 @@
 			path = Managers;
 			sourceTree = "<group>";
 		};
-		F5D7597DE9394B7E9E1AF545 /* Models */ = {
-			isa = PBXGroup;
-			children = (
-				7DA09B2CA31748209EED1963 /* DeviceState.swift */,
-				2C457B8B0A324C8995DE24F7 /* StatusParser.swift */,
-			);
-			path = Models;
-			sourceTree = "<group>";
-		};
 		C6800657033947E6ACF1C288 /* Views */ = {
 			isa = PBXGroup;
 			children = (
@@ -98,6 +67,37 @@
 				9A1C36C686414DC39A8DC664 /* SettingsView.swift */,
 			);
 			path = Views;
+			sourceTree = "<group>";
+		};
+		CB3762D89D714C59A10B97E5 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				21090B9BEF9946E48A21D5CE /* Testicool.app */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		E5F47691E5994C4C8FC1CFDF /* . */ = {
+			isa = PBXGroup;
+			children = (
+				6339E7ABE5E94E78913EEF8B /* TesticoolApp.swift */,
+				629262EAAEE840C3ACEB6BE3 /* ContentView.swift */,
+				9567C4C1B49746B28F61B6FD /* Managers */,
+				F5D7597DE9394B7E9E1AF545 /* Models */,
+				C6800657033947E6ACF1C288 /* Views */,
+				FEC9C6F543594008B08BFB32 /* Assets.xcassets */,
+				EFCC2C7C8033478BBD9470B2 /* Info.plist */,
+			);
+			path = .;
+			sourceTree = "<group>";
+		};
+		F5D7597DE9394B7E9E1AF545 /* Models */ = {
+			isa = PBXGroup;
+			children = (
+				7DA09B2CA31748209EED1963 /* DeviceState.swift */,
+				2C457B8B0A324C8995DE24F7 /* StatusParser.swift */,
+			);
+			path = Models;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -304,40 +304,6 @@
 			};
 			name = Release;
 		};
-		E0EF1630087644C0B62AAEB7 /* Debug */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				ASSETCATALOG_COMPILER_APPICON_NAME = "";
-				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = "";
-				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_ASSET_PATHS = "";
-				DEVELOPMENT_TEAM = "";
-				ENABLE_PREVIEWS = YES;
-				GENERATE_INFOPLIST_FILE = NO;
-				INFOPLIST_FILE = Info.plist;
-				INFOPLIST_KEY_NSBluetoothAlwaysUsageDescription = "Testicool needs Bluetooth access to connect to your device and control the cooling system.";
-				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
-				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
-				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
-				INFOPLIST_KEY_UISupportedInterfaceOrientations = UIInterfaceOrientationPortrait;
-				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown";
-				LD_RUNPATH_SEARCH_PATHS = (
-					"$(inherited)",
-					"@executable_path/Frameworks",
-				);
-				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.testicool.app;
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
-				SUPPORTS_MACCATALYST = NO;
-				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
-				SWIFT_EMIT_LOC_STRINGS = YES;
-				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = 1;
-			};
-			name = Debug;
-		};
 		C71E62F77D92477987749E3D /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -346,7 +312,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "";
-				DEVELOPMENT_TEAM = "";
+				DEVELOPMENT_TEAM = FS4YUZ8CF3;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = Info.plist;
@@ -372,23 +338,57 @@
 			};
 			name = Release;
 		};
+		E0EF1630087644C0B62AAEB7 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = "";
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = "";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_ASSET_PATHS = "";
+				DEVELOPMENT_TEAM = FS4YUZ8CF3;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = Info.plist;
+				INFOPLIST_KEY_NSBluetoothAlwaysUsageDescription = "Testicool needs Bluetooth access to connect to your device and control the cooling system.";
+				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
+				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations = UIInterfaceOrientationPortrait;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.testicool.app;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 1;
+			};
+			name = Debug;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		D149FAD2A25348DD8CE503D2 /* Build configuration list for PBXProject "Testicool" */ = {
-			isa = XCConfigurationList;
-			buildConfigurations = (
-				54AAB1FA4E1D48D8A26E43E2 /* Debug */,
-				A78AD74BAEB54A4BB92A440F /* Release */,
-			);
-			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Release;
-		};
 		7B105E9322F845E1B675A74E /* Build configuration list for PBXNativeTarget "Testicool" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				E0EF1630087644C0B62AAEB7 /* Debug */,
 				C71E62F77D92477987749E3D /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		D149FAD2A25348DD8CE503D2 /* Build configuration list for PBXProject "Testicool" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				54AAB1FA4E1D48D8A26E43E2 /* Debug */,
+				A78AD74BAEB54A4BB92A440F /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

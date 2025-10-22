@@ -15,7 +15,7 @@
 | **HM-10 BLE Module** | Bluetooth 4.0 | 1 | Get the 4-pin version |
 | **DC Water Pump** | 12V, 1-3 L/min | 1 | Mini submersible pump |
 | **NTC Thermistors** | 10kΩ @ 25°C | 2 | One for water, one for skin |
-| **Push Buttons** | Momentary SPST | 2 | Tactile switches work great |
+| **Momentary Button** | Tactile switch (4-pin) | 1 | Small momentary push button |
 | **Resistors** | 10kΩ, 1/4W | 2 | For thermistor voltage dividers |
 | **Power Supply** | 12V, 2A minimum | 1 | Battery pack or wall adapter |
 | **Breadboard** | Full size | 1 | For prototyping |
@@ -43,8 +43,8 @@ Arduino Nano Pinout
 │   A0 ← Water Thermistor     │
 │   A1 ← Skin Thermistor      │
 │                             │
-│   D2 ← ON Button            │
-│   D3 ← OFF Button           │
+│   D2 ← Toggle Button        │
+│        (momentary tactile)  │
 │                             │
 │   D8 → Pump Enable          │
 │   D9 → Pump PWM (speed)     │
@@ -143,31 +143,32 @@ GND ──┬───┬───────→ Common ground for everything
 
 ---
 
-### Step 4: Wire the Manual Buttons
+### Step 4: Wire the Manual Button
 
-**What you're doing:** Adding physical ON/OFF buttons on the device.
+**What you're doing:** Adding a single momentary tactile switch that toggles the pump ON/OFF.
 
 ```
-    D2 ──┬───[Button]───┬── GND    (ON button)
-         │              │
-    (Internal pull-up   │
-     enabled in code)   │
+    D2 ──┬───[Momentary Button]───┬── GND
+         │                        │
+    (Internal pull-up             │
+     enabled in code)             │
 
-    D3 ──┬───[Button]───┬── GND    (OFF button)
-         │              │
-    (Internal pull-up   │
-     enabled in code)   │
+     Press once = ON
+     Press again = OFF
 ```
 
 **Instructions:**
-1. **ON Button:**
-   - Connect one button leg to Arduino **D2**
-   - Connect other leg to **GND**
-2. **OFF Button:**
-   - Connect one button leg to Arduino **D3**
-   - Connect other leg to **GND**
+1. Take your tactile momentary switch (like the one in the photo - small 4-pin switch)
+2. Connect one leg to Arduino **D2**
+3. Connect opposite leg to **GND**
+4. The button has 4 pins but only 2 are needed (pins on opposite corners)
 
-> **No resistors needed!** The Arduino firmware enables internal pull-up resistors, so the buttons just connect directly to ground when pressed.
+**How it works:**
+- Press button → Pump turns ON
+- Press button again → Pump turns OFF
+- Each press toggles the state
+
+> **No resistors needed!** The Arduino firmware enables an internal pull-up resistor on D2. When you press the button, it connects D2 to GND, and the firmware detects this as a button press.
 
 ---
 
@@ -289,9 +290,8 @@ Before powering on, verify all connections:
 - [ ] Skin thermistor: 10kΩ pull-up to 5V, thermistor to GND, junction to A1
 - [ ] Thermistors labeled "WATER" and "SKIN"
 
-### Buttons
-- [ ] ON button: D2 to GND
-- [ ] OFF button: D3 to GND
+### Button
+- [ ] Toggle button: D2 to GND (momentary tactile switch)
 
 ### Bluetooth
 - [ ] HM-10 VCC to 5V
@@ -345,15 +345,17 @@ TEMP     → Should show: TEMP:{Water:10.0C,Skin:34.5C}
 
 > **Note:** If you're seeing simulated temperatures (10.0C and 34.5C), that's normal! The firmware is in simulation mode. Real temps will show once you power cycle and the thermistors warm up.
 
-### 3. Test Manual Buttons
+### 3. Test Manual Button
 
-1. Press the **ON button** (D2)
+1. Press the **toggle button** (D2)
    - Pump should start
-   - Serial monitor shows: `[BUTTON] Manual ON pressed`
+   - Serial monitor shows: `[BUTTON] Toggle button pressed - Pump ON`
 
-2. Press the **OFF button** (D3)
+2. Press the **toggle button** again (D2)
    - Pump should stop
-   - Serial monitor shows: `[BUTTON] Manual OFF pressed`
+   - Serial monitor shows: `[BUTTON] Toggle button pressed - Pump OFF`
+
+3. Press repeatedly to verify toggle works reliably
 
 ### 4. Test Bluetooth Connection
 
@@ -446,8 +448,8 @@ Use this table to verify each component individually:
 | HM-10 | Send "AT" command | Replies "OK" | ⬜ |
 | Water Thermistor | Type "TEMP" in Serial Monitor | Shows reasonable temp (10-30°C) | ⬜ |
 | Skin Thermistor | Type "TEMP" in Serial Monitor | Shows reasonable temp (20-35°C) | ⬜ |
-| ON Button | Press button | Pump turns on, Serial shows message | ⬜ |
-| OFF Button | Press button | Pump turns off, Serial shows message | ⬜ |
+| Toggle Button | Press once | Pump turns ON, Serial shows message | ⬜ |
+| Toggle Button | Press again | Pump turns OFF, Serial shows message | ⬜ |
 | Pump | Send "ON" command | Pump runs | ⬜ |
 | Speed Control | Send "SPEED:255" | Pump runs at full speed | ⬜ |
 | Bluetooth App | Connect from app | App shows "Connected" | ⬜ |
@@ -597,8 +599,8 @@ Here's the full schematic showing how all components connect together:
     │  ┌─────────────────────────┐   │
     │  │   DIGITAL I/O           │   │              ┌──────────────┐
     │  │                         │   │              │   HM-10 BLE  │
-    │  │   D2 ← ON Button        │   │              │              │
-    │  │   D3 ← OFF Button       │   │         VCC ─┤ 5V           │
+    │  │   D2 ← Toggle Button    │   │              │              │
+    │  │        (momentary)      │   │         VCC ─┤ 5V           │
     │  │                         │   │         GND ─┤ GND          │
     │  │   D8 → Pump Enable      │   │          TX ─┤ RX (D0)      │
     │  │   D9 → Pump PWM         │   │          RX ─┤ TX (D1)      │
@@ -647,18 +649,16 @@ Here's the full schematic showing how all components connect together:
          GND                                GND
 
 
-    MANUAL BUTTONS                     STATUS LEDS (Optional)
-    ==============                     ======================
+    TOGGLE BUTTON (Momentary)          STATUS LEDS (Optional)
+    =========================          ======================
 
-    ON Button:                         Power LED:
+    Single toggle button:              Power LED:
     D2 ──┬──[Button]──┬── GND         D12 ──[220Ω]──[LED+|−]── GND
          │            │
     (Internal pull-up)│               Bluetooth LED:
                                       D13 ──[220Ω]──[LED+|−]── GND
-    OFF Button:                       (D13 has built-in LED too)
-    D3 ──┬──[Button]──┬── GND
-         │            │
-    (Internal pull-up)│
+    Press once = ON                   (D13 has built-in LED too)
+    Press again = OFF
 
 
     MOSFET PUMP DRIVER (Optional - for >500mA pumps)
@@ -708,8 +708,7 @@ Here's the full schematic showing how all components connect together:
     │  └─ A1 ← Skin thermistor (voltage divider)
     │
     ├─ Digital Inputs:
-    │  ├─ D2 ← ON button (to GND)
-    │  └─ D3 ← OFF button (to GND)
+    │  └─ D2 ← Toggle button (momentary tactile, to GND)
     │
     ├─ Digital Outputs:
     │  ├─ D8 → Pump enable (MOSFET gate via 220Ω)
@@ -786,9 +785,8 @@ Here's the full schematic showing how all components connect together:
     ☐ HM-10 TX crosses to Arduino RX
     ☐ HM-10 RX crosses to Arduino TX
 
-    Buttons:
-    ☐ ON button: D2 to GND
-    ☐ OFF button: D3 to GND
+    Button:
+    ☐ Toggle button: D2 to GND (momentary tactile switch)
 
     Pump:
     ☐ Pump+ to 12V supply
@@ -806,7 +804,7 @@ Here's the full schematic showing how all components connect together:
     BLACK:  Ground (GND)
     ORANGE: +5V regulated
     YELLOW: Analog signals (A0, A1)
-    GREEN:  Digital inputs (D2, D3)
+    GREEN:  Digital input (D2 toggle button)
     BLUE:   Serial communication (TX, RX)
     WHITE:  PWM signals (D8, D9)
     PURPLE: LED outputs (D12, D13)

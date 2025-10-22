@@ -21,9 +21,8 @@
 #define PUMP_ENABLE_PIN     8      // Digital pin to enable/disable pump
 #define PUMP_DIRECTION_PIN  7      // Optional: for bidirectional pumps (not used in single-direction setup)
 
-// Manual Control Buttons (on bottle lid)
-#define BUTTON_ON_PIN       2      // Manual ON button (use interrupt-capable pin)
-#define BUTTON_OFF_PIN      3      // Manual OFF button (use interrupt-capable pin)
+// Manual Control Button (single momentary tactile switch on bottle lid)
+#define BUTTON_TOGGLE_PIN   2      // Toggle button - press to turn ON/OFF (interrupt-capable pin)
 #define BUTTON_DEBOUNCE_MS  50     // Button debounce delay in milliseconds
 
 // Temperature Sensors (dual thermistor setup)

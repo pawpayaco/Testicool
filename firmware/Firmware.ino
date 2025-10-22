@@ -39,10 +39,8 @@
 // ============================================================================
 
 // Button state tracking for debouncing
-static unsigned long lastButtonPressOn = 0;
-static unsigned long lastButtonPressOff = 0;
-static bool lastButtonStateOn = HIGH;
-static bool lastButtonStateOff = HIGH;
+static unsigned long lastButtonPress = 0;
+static bool lastButtonState = HIGH;
 
 // Timing variables for non-blocking operation
 static unsigned long lastStatusUpdate = 0;
@@ -59,9 +57,8 @@ void setup() {
   // Initialize pump hardware
   pumpInit();
 
-  // Configure manual control button pins
-  pinMode(BUTTON_ON_PIN, INPUT_PULLUP);   // Internal pull-up resistor
-  pinMode(BUTTON_OFF_PIN, INPUT_PULLUP);  // Internal pull-up resistor
+  // Configure manual control button pin
+  pinMode(BUTTON_TOGGLE_PIN, INPUT_PULLUP);   // Internal pull-up resistor
 
   // Configure optional status LED pins
   #ifdef LED_POWER_PIN
@@ -185,47 +182,40 @@ void loop() {
 void checkManualButtons() {
   unsigned long currentMillis = millis();
 
-  // ========== ON BUTTON ==========
-  bool buttonStateOn = digitalRead(BUTTON_ON_PIN);
+  // ========== TOGGLE BUTTON ==========
+  bool buttonState = digitalRead(BUTTON_TOGGLE_PIN);
 
   // Check for button press (LOW = pressed with pull-up resistor)
-  if (buttonStateOn == LOW && lastButtonStateOn == HIGH) {
+  if (buttonState == LOW && lastButtonState == HIGH) {
     // Debounce check
-    if (currentMillis - lastButtonPressOn > BUTTON_DEBOUNCE_MS) {
-      lastButtonPressOn = currentMillis;
+    if (currentMillis - lastButtonPress > BUTTON_DEBOUNCE_MS) {
+      lastButtonPress = currentMillis;
 
-      // Turn pump ON
-      if (pumpOn()) {
-        bluetoothSendMessage("MANUAL:ON");
+      // Toggle pump state
+      PumpState currentState = pumpGetState();
+
+      if (currentState == PUMP_ON) {
+        // Pump is ON, turn it OFF
+        pumpOff();
+        bluetoothSendMessage("MANUAL:OFF");
+
         #if DEBUG_MODE
-          Serial.println(F("[BUTTON] Manual ON pressed"));
+          Serial.println(F("[BUTTON] Toggle button pressed - Pump OFF"));
         #endif
+      } else {
+        // Pump is OFF, turn it ON
+        if (pumpOn()) {
+          bluetoothSendMessage("MANUAL:ON");
+
+          #if DEBUG_MODE
+            Serial.println(F("[BUTTON] Toggle button pressed - Pump ON"));
+          #endif
+        }
       }
     }
   }
 
-  lastButtonStateOn = buttonStateOn;
-
-  // ========== OFF BUTTON ==========
-  bool buttonStateOff = digitalRead(BUTTON_OFF_PIN);
-
-  // Check for button press (LOW = pressed with pull-up resistor)
-  if (buttonStateOff == LOW && lastButtonStateOff == HIGH) {
-    // Debounce check
-    if (currentMillis - lastButtonPressOff > BUTTON_DEBOUNCE_MS) {
-      lastButtonPressOff = currentMillis;
-
-      // Turn pump OFF
-      pumpOff();
-      bluetoothSendMessage("MANUAL:OFF");
-
-      #if DEBUG_MODE
-        Serial.println(F("[BUTTON] Manual OFF pressed"));
-      #endif
-    }
-  }
-
-  lastButtonStateOff = buttonStateOff;
+  lastButtonState = buttonState;
 }
 
 // ============================================================================
