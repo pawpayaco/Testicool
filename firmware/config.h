@@ -25,6 +25,10 @@
 #define BUTTON_TOGGLE_PIN   2      // Toggle button - press to turn ON/OFF (interrupt-capable pin)
 #define BUTTON_DEBOUNCE_MS  50     // Button debounce delay in milliseconds
 
+// Manual Speed Control (rotary potentiometer on bottle lid)
+#define SPEED_POT_PIN       A2     // Potentiometer for manual speed control (0-5V = 0-255 PWM)
+#define SPEED_READ_INTERVAL_MS  100  // Read potentiometer every 100ms
+
 // Temperature Sensors (dual thermistor setup)
 #define TEMP_SENSOR_WATER_PIN  A0  // Water temperature sensor (thermistor in reservoir)
 #define TEMP_SENSOR_SKIN_PIN   A1  // Skin temperature sensor (thermistor on user)

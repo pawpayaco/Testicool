@@ -45,6 +45,10 @@ static bool lastButtonState = HIGH;
 // Timing variables for non-blocking operation
 static unsigned long lastStatusUpdate = 0;
 static unsigned long lastTempRead = 0;
+static unsigned long lastSpeedRead = 0;
+
+// Speed control tracking
+static uint8_t lastPotSpeed = 180;  // Track last potentiometer speed reading
 
 // ============================================================================
 // ARDUINO SETUP FUNCTION
@@ -76,6 +80,9 @@ void setup() {
     pinMode(TEMP_SENSOR_WATER_PIN, INPUT);
     pinMode(TEMP_SENSOR_SKIN_PIN, INPUT);
   #endif
+
+  // Configure speed potentiometer pin
+  pinMode(SPEED_POT_PIN, INPUT);
 
   #if DEBUG_MODE
     Serial.println(F("[SETUP] Testicool initialization complete"));
@@ -168,7 +175,18 @@ void loop() {
   }
   #endif
 
-  // ========== 6. LED STATUS INDICATION ==========
+  // ========== 6. MANUAL SPEED CONTROL (POTENTIOMETER) ==========
+  // Read potentiometer and adjust pump speed
+  if (currentMillis - lastSpeedRead >= SPEED_READ_INTERVAL_MS) {
+    lastSpeedRead = currentMillis;
+
+    // Only read pot if pump is running
+    if (pumpGetState() == PUMP_ON) {
+      checkManualSpeedControl();
+    }
+  }
+
+  // ========== 7. LED STATUS INDICATION ==========
   updateStatusLEDs();
 
   // Small delay for loop stability (non-blocking)
@@ -216,6 +234,46 @@ void checkManualButtons() {
   }
 
   lastButtonState = buttonState;
+}
+
+// ============================================================================
+// MANUAL SPEED CONTROL (POTENTIOMETER)
+// ============================================================================
+
+void checkManualSpeedControl() {
+  // Read potentiometer value (0-1023)
+  int potValue = analogRead(SPEED_POT_PIN);
+
+  // Map to pump speed range (0-255)
+  // Add small deadzone at bottom to ensure pump can be set to "off" speed
+  uint8_t newSpeed;
+  if (potValue < 20) {
+    newSpeed = 0;  // Deadzone at bottom
+  } else {
+    newSpeed = map(potValue, 20, 1023, 10, 255);  // Map 20-1023 to 10-255
+  }
+
+  // Only update if speed changed significantly (> 5 units to reduce jitter)
+  if (abs((int)newSpeed - (int)lastPotSpeed) > 5) {
+    lastPotSpeed = newSpeed;
+
+    // Set the new pump speed
+    if (pumpSetSpeed(newSpeed)) {
+      #if DEBUG_MODE
+        Serial.print(F("[POT] Manual speed adjusted: "));
+        Serial.print(newSpeed);
+        Serial.print(F(" ("));
+        Serial.print((newSpeed * 100) / 255);
+        Serial.println(F("%)"));
+      #endif
+
+      // Send notification via Bluetooth (optional - might be too chatty)
+      // Uncomment if you want app to update when pot is turned
+      // char msg[32];
+      // snprintf(msg, sizeof(msg), "MANUAL_SPEED:%d", newSpeed);
+      // bluetoothSendMessage(msg);
+    }
+  }
 }
 
 // ============================================================================

@@ -16,6 +16,7 @@
 | **DC Water Pump** | 12V, 1-3 L/min | 1 | Mini submersible pump |
 | **NTC Thermistors** | 10kΩ @ 25°C | 2 | One for water, one for skin |
 | **Momentary Button** | Tactile switch (4-pin) | 1 | Small momentary push button |
+| **Potentiometer** | 10kΩ rotary, 3-pin | 1 | Speed control dial |
 | **Resistors** | 10kΩ, 1/4W | 2 | For thermistor voltage dividers |
 | **Power Supply** | 12V, 2A minimum | 1 | Battery pack or wall adapter |
 | **Breadboard** | Full size | 1 | For prototyping |
@@ -42,6 +43,7 @@ Arduino Nano Pinout
 │                             │
 │   A0 ← Water Thermistor     │
 │   A1 ← Skin Thermistor      │
+│   A2 ← Speed Potentiometer  │
 │                             │
 │   D2 ← Toggle Button        │
 │        (momentary tactile)  │
@@ -172,7 +174,41 @@ GND ──┬───┬───────→ Common ground for everything
 
 ---
 
-### Step 5: Wire the HM-10 Bluetooth Module
+### Step 5: Wire the Speed Control Potentiometer
+
+**What you're doing:** Adding a rotary dial to manually control pump speed from the bottle lid.
+
+```
+         +5V (from Arduino)
+          │
+          │
+    Potentiometer (3-pin)
+          │
+    ┌─────┼─────┐
+    │     │     │
+   Pin1  Pin2  Pin3
+    │     │     │
+   +5V   A2    GND
+```
+
+**Instructions:**
+1. Your potentiometer has 3 pins (terminals)
+2. Connect **outer pin #1** → Arduino **5V**
+3. Connect **middle pin (wiper)** → Arduino **A2**
+4. Connect **outer pin #3** → Arduino **GND**
+
+**How it works:**
+- Turn dial fully counterclockwise → Minimum speed (or off)
+- Turn dial fully clockwise → Maximum speed (100%)
+- The wiper (middle pin) outputs a voltage between 0-5V
+- Arduino reads this voltage and converts it to PWM (0-255)
+- Works alongside app slider - either can control speed!
+
+> **Note:** The potentiometer creates a voltage divider. As you turn the dial, the wiper voltage changes from 0V to 5V, which the Arduino maps to pump speed.
+
+---
+
+### Step 6: Wire the HM-10 Bluetooth Module
 
 **What you're doing:** Connecting the Bluetooth module for wireless app control.
 
@@ -204,7 +240,7 @@ If the HM-10 is brand new, you may need to configure it:
 
 ---
 
-### Step 6: Wire the Pump (Simple Method)
+### Step 7: Wire the Pump (Simple Method)
 
 **What you're doing:** Connecting the pump to be controlled by the Arduino.
 
@@ -255,7 +291,7 @@ Pump - ──→ MOSFET Drain
 
 ---
 
-### Step 7: Add Status LEDs (Optional)
+### Step 8: Add Status LEDs (Optional)
 
 **What you're doing:** Adding visual indicators for power and Bluetooth status.
 
@@ -290,8 +326,9 @@ Before powering on, verify all connections:
 - [ ] Skin thermistor: 10kΩ pull-up to 5V, thermistor to GND, junction to A1
 - [ ] Thermistors labeled "WATER" and "SKIN"
 
-### Button
+### Manual Controls
 - [ ] Toggle button: D2 to GND (momentary tactile switch)
+- [ ] Potentiometer: Outer pins to 5V and GND, wiper (middle) to A2
 
 ### Bluetooth
 - [ ] HM-10 VCC to 5V
@@ -593,7 +630,7 @@ Here's the full schematic showing how all components connect together:
     │  │                         │   │        Drain├─────────┤ Pump-
     │  │   A0 ← Water Thermistor │   │       Source└─────────┤ GND
     │  │   A1 ← Skin Thermistor  │   │                       │
-    │  │                         │   │                      D9 (PWM Speed - can go to Gate too)
+    │  │   A2 ← Speed Pot (wiper)│   │                      D9 (PWM Speed - can go to Gate too)
     │  └─────────────────────────┘   │
     │                                │
     │  ┌─────────────────────────┐   │
@@ -647,6 +684,30 @@ Here's the full schematic showing how all components connect together:
         └─┬─┘ (@25°C)                      └─┬─┘ (@25°C)
           │                                  │
          GND                                GND
+
+
+    SPEED POTENTIOMETER (A2)
+    ========================
+
+         +5V (Arduino)
+          │
+          │
+        ┌─┴─┐
+        │ 1 │  Pin 1 (outer)
+        │   │
+        │ 2 │──────────→ A2 (wiper/middle pin)
+        │   │
+        │ 3 │  Pin 3 (outer)
+        └─┬─┘
+          │
+         GND
+
+    How it works:
+    - Turn dial → Voltage at wiper changes (0-5V)
+    - Arduino reads voltage on A2
+    - Maps to pump speed (0-255 PWM)
+    - Updates every 100ms
+    - Works alongside app slider!
 
 
     TOGGLE BUTTON (Momentary)          STATUS LEDS (Optional)
