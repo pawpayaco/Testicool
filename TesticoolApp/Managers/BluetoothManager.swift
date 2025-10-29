@@ -46,7 +46,7 @@ class BluetoothManager: NSObject, ObservableObject {
 
     // Status polling timer
     private var statusTimer: Timer?
-    private let statusPollingInterval: TimeInterval = 5.0
+    private let statusPollingInterval: TimeInterval = 1.0  // Poll every 1 second for live updates
 
     // Received data buffer
     private var receiveBuffer = ""
@@ -114,9 +114,15 @@ class BluetoothManager: NSObject, ObservableObject {
     /// Send a command to the device
     func sendCommand(_ command: String) {
         guard let peripheral = connectedPeripheral,
-              let characteristic = txCharacteristic,
               peripheral.state == .connected else {
             print("[BT] Cannot send command - not connected")
+            return
+        }
+
+        // Use rxCharacteristic if available, otherwise fall back to txCharacteristic
+        // (For DSD TECH, both point to same FFE1 characteristic)
+        guard let characteristic = rxCharacteristic ?? txCharacteristic else {
+            print("[BT] No characteristic available for writing")
             return
         }
 
@@ -128,26 +134,61 @@ class BluetoothManager: NSObject, ObservableObject {
             return
         }
 
-        peripheral.writeValue(data, for: characteristic, type: .withResponse)
-        print("[BT] Sent command: \(command)")
+        // DSD TECH: Try withoutResponse first, the characteristic properties determine what's supported
+        let writeType: CBCharacteristicWriteType = characteristic.properties.contains(.write) ? .withResponse : .withoutResponse
+        peripheral.writeValue(data, for: characteristic, type: writeType)
+        print("[BT] Sent command: \(command) (writeType: \(writeType == .withResponse ? "withResponse" : "withoutResponse"))")
     }
 
     /// Turn pump ON
     func turnPumpOn() {
-        sendCommand("ON")
+        print("[BT] turnPumpOn() called - optimistically setting to ON")
+        // OPTIMISTIC UPDATE - update UI immediately for instant feedback
+        deviceState.isPumpOn = true
         deviceState.lastControlSource = .app
+
+        sendCommand("ON")
+
+        // Request immediate status update to confirm
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) { [weak self] in
+            self?.requestStatus()
+        }
     }
 
     /// Turn pump OFF
     func turnPumpOff() {
+        print("[BT] turnPumpOff() called - optimistically setting to OFF")
+
+        // IMMEDIATE UI RESET - update everything instantly
+        DispatchQueue.main.async {
+            self.deviceState.isPumpOn = false
+            self.deviceState.lastControlSource = .app
+            self.deviceState.runtimeSeconds = 0
+            self.deviceState.remainingSeconds = 1800
+            self.deviceState.refreshID = UUID()
+        }
+
         sendCommand("OFF")
-        deviceState.lastControlSource = .app
+
+        // Request immediate status update to confirm
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) { [weak self] in
+            self?.requestStatus()
+        }
     }
 
     /// Set pump speed (0-255)
     func setPumpSpeed(_ speed: Int) {
         let clampedSpeed = max(0, min(255, speed))
+
+        // Optimistically update UI immediately
+        deviceState.pumpSpeed = clampedSpeed
+
         sendCommand("SPEED:\(clampedSpeed)")
+
+        // Request status update after a short delay to confirm
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) { [weak self] in
+            self?.requestStatus()
+        }
     }
 
     /// Request status update
@@ -161,6 +202,16 @@ class BluetoothManager: NSObject, ObservableObject {
     }
 
     // MARK: - Private Methods
+
+    private func characteristicPropertiesString(_ properties: CBCharacteristicProperties) -> String {
+        var props: [String] = []
+        if properties.contains(.read) { props.append("read") }
+        if properties.contains(.write) { props.append("write") }
+        if properties.contains(.writeWithoutResponse) { props.append("writeWithoutResponse") }
+        if properties.contains(.notify) { props.append("notify") }
+        if properties.contains(.indicate) { props.append("indicate") }
+        return props.joined(separator: ", ")
+    }
 
     private func startStatusPolling() {
         stopStatusPolling()
@@ -206,25 +257,33 @@ class BluetoothManager: NSObject, ObservableObject {
             if let status = StatusParser.parseStatus(response) {
                 DispatchQueue.main.async {
                     self.deviceState.updateFromStatus(status)
+                    print("[BT] Updated state from STATUS - isPumpOn: \(self.deviceState.isPumpOn), waterTemp: \(self.deviceState.waterTemperature), skinTemp: \(self.deviceState.skinTemperature)")
                 }
             }
         } else if response.hasPrefix("TEMP:") {
             // Parse temperature (dual format)
+            print("[BT] Parsing TEMP response: \(response)")
             if let temps = StatusParser.parseTemperature(response) {
+                print("[BT] Parsed temps - Water: \(temps.water ?? -999), Skin: \(temps.skin ?? -999)")
                 DispatchQueue.main.async {
                     if let waterTemp = temps.water {
+                        print("[BT] Updating waterTemperature: \(waterTemp)")
                         self.deviceState.waterTemperature = waterTemp
                     }
                     if let skinTemp = temps.skin {
+                        print("[BT] Updating skinTemperature: \(skinTemp)")
                         self.deviceState.skinTemperature = skinTemp
                     }
                 }
+            } else {
+                print("[BT] Failed to parse TEMP response!")
             }
         } else if response.hasPrefix("PUMP:") {
             // Parse pump state change
             if let state = StatusParser.parsePumpState(response) {
                 DispatchQueue.main.async {
                     self.deviceState.isPumpOn = (state == .on)
+                    print("[BT] Updated isPumpOn from PUMP response: \(self.deviceState.isPumpOn)")
                 }
             }
         } else if response.hasPrefix("MANUAL:") {
@@ -233,6 +292,11 @@ class BluetoothManager: NSObject, ObservableObject {
                 DispatchQueue.main.async {
                     self.deviceState.isPumpOn = (state == .on)
                     self.deviceState.lastControlSource = .manual
+                    print("[BT] Manual control: isPumpOn = \(self.deviceState.isPumpOn)")
+                }
+                // Request full status update to sync everything
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) { [weak self] in
+                    self?.requestStatus()
                 }
             }
         } else if response.hasPrefix("ERROR:") {
@@ -242,8 +306,11 @@ class BluetoothManager: NSObject, ObservableObject {
                 self.deviceState.setError(errorMessage)
             }
         } else if response == "OK" {
-            // Command acknowledged
-            print("[BT] Command acknowledged")
+            // Command acknowledged - request status to sync UI
+            print("[BT] Command acknowledged - requesting status")
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) { [weak self] in
+                self?.requestStatus()
+            }
         }
     }
 }
@@ -347,6 +414,7 @@ extension BluetoothManager: CBPeripheralDelegate {
 
         for characteristic in characteristics {
             print("[BT] Discovered characteristic: \(characteristic.uuid)")
+            print("[BT]   Properties: \(characteristicPropertiesString(characteristic.properties))")
 
             if characteristic.uuid == txCharacteristicUUID {
                 // This is the device's TX (our RX) - enable notifications

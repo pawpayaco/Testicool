@@ -60,13 +60,15 @@ struct StatusParser {
 
             case "WaterTemp":
                 // Remove 'C' suffix and parse as double
-                let tempString = value.replacingOccurrences(of: "C", with: "")
+                let tempString = value.replacingOccurrences(of: "C", with: "").trimmingCharacters(in: .whitespaces)
                 waterTemperature = Double(tempString)
+                print("[Parser] WaterTemp: '\(value)' -> '\(tempString)' -> \(waterTemperature ?? -999)")
 
             case "SkinTemp":
                 // Remove 'C' suffix and parse as double
-                let tempString = value.replacingOccurrences(of: "C", with: "")
+                let tempString = value.replacingOccurrences(of: "C", with: "").trimmingCharacters(in: .whitespaces)
                 skinTemperature = Double(tempString)
+                print("[Parser] SkinTemp: '\(value)' -> '\(tempString)' -> \(skinTemperature ?? -999)")
 
             case "Temp":
                 // Legacy single temperature support - use as water temp
@@ -80,19 +82,18 @@ struct StatusParser {
             }
         }
 
-        // Validate required fields
-        guard let state = state,
-              let speed = speed,
-              let runtimeMinutes = runtimeMinutes,
-              let remainingMinutes = remainingMinutes else {
+        // Validate required fields - only state is truly required
+        // Speed, runtime, and remaining are optional (may not be present when OFF)
+        guard let state = state else {
+            print("[Parser] ERROR: No state found in STATUS response!")
             return nil
         }
 
         return ParsedStatus(
             state: state,
-            speed: speed,
-            runtimeMinutes: runtimeMinutes,
-            remainingMinutes: remainingMinutes,
+            speed: speed ?? 0,  // Default to 0 if not present
+            runtimeMinutes: runtimeMinutes ?? 0,
+            remainingMinutes: remainingMinutes ?? 30,  // Default to max time
             waterTemperature: waterTemperature,
             skinTemperature: skinTemperature
         )
@@ -121,7 +122,7 @@ struct StatusParser {
                 let key = String(keyValue[0]).trimmingCharacters(in: .whitespaces)
                 let value = String(keyValue[1]).trimmingCharacters(in: .whitespaces)
 
-                let tempValue = Double(value.replacingOccurrences(of: "C", with: ""))
+                let tempValue = Double(value.replacingOccurrences(of: "C", with: "").trimmingCharacters(in: .whitespaces))
 
                 if key == "Water" {
                     waterTemp = tempValue

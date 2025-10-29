@@ -3,9 +3,20 @@
 <plist version="1.0">
 <dict>
     <key>NSBluetoothAlwaysUsageDescription</key>
-    <string>Testicool needs Bluetooth access to connect to your device and control the cooling system.</string>
+    <string>Testicool needs Bluetooth access to connect to your device and control the cooling system via Classic Bluetooth SPP.</string>
     <key>NSBluetoothPeripheralUsageDescription</key>
     <string>Testicool uses Bluetooth to communicate with the cooling device hardware.</string>
+    <key>UISupportedExternalAccessoryProtocols</key>
+    <array>
+        <string>com.ks03.bluetooth</string>
+        <string>com.jdy31.bluetooth</string>
+        <string>com.dsdtech.bluetooth</string>
+        <string>com.serialportprofile</string>
+    </array>
+    <key>UIBackgroundModes</key>
+    <array>
+        <string>external-accessory</string>
+    </array>
     <key>CFBundleExecutable</key>
     <string>$(EXECUTABLE_NAME)</string>
     <key>CFBundleIdentifier</key>

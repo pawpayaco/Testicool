@@ -686,30 +686,6 @@ Here's the full schematic showing how all components connect together:
          GND                                GND
 
 
-    SPEED POTENTIOMETER (A2)
-    ========================
-
-         +5V (Arduino)
-          │
-          │
-        ┌─┴─┐
-        │ 1 │  Pin 1 (outer)
-        │   │
-        │ 2 │──────────→ A2 (wiper/middle pin)
-        │   │
-        │ 3 │  Pin 3 (outer)
-        └─┬─┘
-          │
-         GND
-
-    How it works:
-    - Turn dial → Voltage at wiper changes (0-5V)
-    - Arduino reads voltage on A2
-    - Maps to pump speed (0-255 PWM)
-    - Updates every 100ms
-    - Works alongside app slider!
-
-
     TOGGLE BUTTON (Momentary)          STATUS LEDS (Optional)
     =========================          ======================
 

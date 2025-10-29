@@ -7,9 +7,17 @@
 //
 
 import SwiftUI
+import Combine
 
 struct StatusView: View {
     @EnvironmentObject var bluetoothManager: BluetoothManager
+
+    // Local state that updates every second
+    @State private var displayRuntime: Int = 0
+    @State private var displayRemaining: Int = 1800
+
+    // Timer for live updates
+    let timer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
 
     var body: some View {
         VStack(spacing: 15) {
@@ -35,18 +43,17 @@ struct StatusView: View {
 
                     // Progress circle
                     Circle()
-                        .trim(from: 0, to: bluetoothManager.deviceState.runtimeProgress)
+                        .trim(from: 0, to: runtimeProgress)
                         .stroke(
                             progressColor,
                             style: StrokeStyle(lineWidth: 12, lineCap: .round)
                         )
                         .frame(width: 120, height: 120)
                         .rotationEffect(.degrees(-90))
-                        .animation(.easeInOut, value: bluetoothManager.deviceState.runtimeProgress)
 
                     // Center text
                     VStack(spacing: 4) {
-                        Text(bluetoothManager.deviceState.formattedRemainingTime)
+                        Text(formattedRemainingTime)
                             .font(.system(size: 20, weight: .bold))
                             .foregroundColor(.primary)
 
@@ -59,31 +66,61 @@ struct StatusView: View {
 
                 // Status rows
                 VStack(spacing: 10) {
-                    StatusRow(
-                        icon: "clock.fill",
-                        label: "Runtime",
-                        value: bluetoothManager.deviceState.formattedRuntime,
-                        color: .blue
-                    )
+                    HStack(spacing: 12) {
+                        Image(systemName: "clock.fill")
+                            .font(.system(size: 16))
+                            .foregroundColor(.blue)
+                            .frame(width: 24)
+
+                        Text("Runtime")
+                            .font(.system(size: 15))
+                            .foregroundColor(.secondary)
+
+                        Spacer()
+
+                        Text(formattedRuntime)
+                            .font(.system(size: 15, weight: .semibold))
+                            .foregroundColor(.primary)
+                    }
 
                     Divider()
 
-                    StatusRow(
-                        icon: "hourglass",
-                        label: "Max Session",
-                        value: "30m 0s",
-                        color: .gray
-                    )
+                    HStack(spacing: 12) {
+                        Image(systemName: "hourglass")
+                            .font(.system(size: 16))
+                            .foregroundColor(.gray)
+                            .frame(width: 24)
+
+                        Text("Max Session")
+                            .font(.system(size: 15))
+                            .foregroundColor(.secondary)
+
+                        Spacer()
+
+                        Text("30m 0s")
+                            .font(.system(size: 15, weight: .semibold))
+                            .foregroundColor(.primary)
+                    }
 
                     if bluetoothManager.deviceState.isPumpOn {
                         Divider()
 
-                        StatusRow(
-                            icon: "drop.fill",
-                            label: "Flow Status",
-                            value: "Active",
-                            color: .green
-                        )
+                        HStack(spacing: 12) {
+                            Image(systemName: "drop.fill")
+                                .font(.system(size: 16))
+                                .foregroundColor(.green)
+                                .frame(width: 24)
+
+                            Text("Flow Status")
+                                .font(.system(size: 15))
+                                .foregroundColor(.secondary)
+
+                            Spacer()
+
+                            Text("Active")
+                                .font(.system(size: 15, weight: .semibold))
+                                .foregroundColor(.primary)
+                        }
                     }
                 }
                 .padding(.horizontal, 15)
@@ -95,7 +132,7 @@ struct StatusView: View {
             }
 
             // Safety notice
-            if bluetoothManager.deviceState.remainingSeconds < 300 && bluetoothManager.deviceState.isPumpOn {
+            if displayRemaining < 300 && bluetoothManager.deviceState.isPumpOn {
                 HStack(spacing: 8) {
                     Image(systemName: "exclamationmark.circle.fill")
                         .foregroundColor(.orange)
@@ -118,11 +155,63 @@ struct StatusView: View {
                 .fill(Color(.systemBackground))
                 .shadow(color: Color.black.opacity(0.05), radius: 10, x: 0, y: 5)
         )
+        .onReceive(timer) { _ in
+            if bluetoothManager.deviceState.isPumpOn {
+                // Increment runtime every second
+                displayRuntime += 1
+                // Decrement remaining every second
+                if displayRemaining > 0 {
+                    displayRemaining -= 1
+                }
+            }
+        }
+        .onChange(of: bluetoothManager.deviceState.isPumpOn) { isOn in
+            print("[StatusView] isPumpOn changed to: \(isOn)")
+            if isOn {
+                // Pump turned on - start fresh if runtime is 0
+                if displayRuntime == 0 {
+                    displayRemaining = 1800
+                }
+            } else {
+                // Pump turned off - IMMEDIATE RESET
+                print("[StatusView] Resetting clock to 30:00")
+                displayRuntime = 0
+                displayRemaining = 1800
+            }
+        }
+        .onChange(of: bluetoothManager.deviceState.runtimeSeconds) { newValue in
+            // Sync with firmware data
+            displayRuntime = newValue
+        }
+        .onChange(of: bluetoothManager.deviceState.remainingSeconds) { newValue in
+            // Sync with firmware data
+            displayRemaining = newValue
+        }
+        .onAppear {
+            displayRuntime = bluetoothManager.deviceState.runtimeSeconds
+            displayRemaining = bluetoothManager.deviceState.remainingSeconds
+        }
+    }
+
+    private var runtimeProgress: Double {
+        let maxSeconds = 1800.0
+        return min(Double(displayRuntime) / maxSeconds, 1.0)
+    }
+
+    private var formattedRuntime: String {
+        let minutes = displayRuntime / 60
+        let seconds = displayRuntime % 60
+        return String(format: "%dm %ds", minutes, seconds)
+    }
+
+    private var formattedRemainingTime: String {
+        let minutes = displayRemaining / 60
+        let seconds = displayRemaining % 60
+        return String(format: "%dm %ds", minutes, seconds)
     }
 
     private var progressColor: Color {
-        let progress = bluetoothManager.deviceState.runtimeProgress
-
+        let progress = runtimeProgress
         if progress < 0.5 {
             return .green
         } else if progress < 0.8 {
@@ -132,36 +221,6 @@ struct StatusView: View {
         }
     }
 }
-
-// MARK: - Status Row
-
-struct StatusRow: View {
-    let icon: String
-    let label: String
-    let value: String
-    let color: Color
-
-    var body: some View {
-        HStack(spacing: 12) {
-            Image(systemName: icon)
-                .font(.system(size: 16))
-                .foregroundColor(color)
-                .frame(width: 24)
-
-            Text(label)
-                .font(.system(size: 15))
-                .foregroundColor(.secondary)
-
-            Spacer()
-
-            Text(value)
-                .font(.system(size: 15, weight: .semibold))
-                .foregroundColor(.primary)
-        }
-    }
-}
-
-// MARK: - Preview
 
 struct StatusView_Previews: PreviewProvider {
     static var previews: some View {

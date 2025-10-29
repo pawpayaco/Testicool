@@ -19,10 +19,26 @@ class DeviceState: ObservableObject {
     @Published var pumpSpeed: Int = 180 // Default speed from firmware
 
     /// Current water temperature in Celsius
-    @Published var waterTemperature: Double = 0.0
+    @Published var waterTemperature: Double = 0.0 {
+        didSet {
+            if waterTemperature != oldValue {
+                print("[DeviceState] WaterTemp changed: \(oldValue) -> \(waterTemperature)")
+                refreshID = UUID()
+                objectWillChange.send()
+            }
+        }
+    }
 
     /// Current skin temperature in Celsius
-    @Published var skinTemperature: Double = 0.0
+    @Published var skinTemperature: Double = 0.0 {
+        didSet {
+            if skinTemperature != oldValue {
+                print("[DeviceState] SkinTemp changed: \(oldValue) -> \(skinTemperature)")
+                refreshID = UUID()
+                objectWillChange.send()
+            }
+        }
+    }
 
     /// Runtime in seconds
     @Published var runtimeSeconds: Int = 0
@@ -41,6 +57,9 @@ class DeviceState: ObservableObject {
 
     /// Last control source (manual button or app)
     @Published var lastControlSource: ControlSource = .app
+
+    /// Refresh trigger to force UI updates
+    @Published var refreshID: UUID = UUID()
 
     // MARK: - Computed Properties
 
@@ -96,20 +115,41 @@ class DeviceState: ObservableObject {
 
     /// Update state from parsed status data
     func updateFromStatus(_ status: ParsedStatus) {
-        isPumpOn = status.state == .on
+        print("[DeviceState] updateFromStatus called - WaterTemp: \(status.waterTemperature ?? -999), SkinTemp: \(status.skinTemperature ?? -999)")
+
+        // Handle pump state
+        switch status.state {
+        case .on:
+            isPumpOn = true
+            safetyShutoff = false
+        case .off:
+            isPumpOn = false
+            safetyShutoff = false
+        case .error:
+            isPumpOn = false
+            safetyShutoff = true
+        }
+
         pumpSpeed = status.speed
         runtimeSeconds = status.runtimeMinutes * 60
         remainingSeconds = status.remainingMinutes * 60
 
+        // CRITICAL: Always update temperatures to trigger didSet
         if let waterTemp = status.waterTemperature {
+            print("[DeviceState] Setting waterTemperature from \(waterTemperature) to \(waterTemp)")
             waterTemperature = waterTemp
         }
 
         if let skinTemp = status.skinTemperature {
+            print("[DeviceState] Setting skinTemperature from \(skinTemperature) to \(skinTemp)")
             skinTemperature = skinTemp
         }
 
         lastUpdateTime = Date()
+
+        // Force UI refresh
+        refreshID = UUID()
+        objectWillChange.send()
     }
 
     /// Set error state
@@ -144,6 +184,7 @@ enum ControlSource {
 enum PumpState: String {
     case on = "ON"
     case off = "OFF"
+    case error = "ERROR"
 }
 
 /// Parsed status data from device

@@ -7,6 +7,7 @@
 //
 
 import SwiftUI
+import Combine
 
 struct PumpControlView: View {
     @EnvironmentObject var bluetoothManager: BluetoothManager
@@ -90,13 +91,16 @@ struct PumpControlView: View {
 
 struct PumpControlCard: View {
     @EnvironmentObject var bluetoothManager: BluetoothManager
+    @State private var isPumpOn: Bool = false
+    @State private var refreshTrigger = UUID()
 
     var body: some View {
         VStack(spacing: 20) {
-            // Pump state text
-            Text(bluetoothManager.deviceState.isPumpOn ? "Pump Running" : "Pump Off")
+            // Pump state text - FORCE REFRESH
+            Text(isPumpOn ? "Pump Running" : "Pump Off")
                 .font(.system(size: 24, weight: .bold))
-                .foregroundColor(bluetoothManager.deviceState.isPumpOn ? .green : .secondary)
+                .foregroundColor(isPumpOn ? .green : .secondary)
+                .id(refreshTrigger)
 
             // Big ON/OFF button
             Button(action: {
@@ -108,30 +112,28 @@ struct PumpControlCard: View {
             }) {
                 ZStack {
                     Circle()
-                        .fill(
-                            bluetoothManager.deviceState.isPumpOn ?
-                                Color.red : Color.green
-                        )
+                        .fill(isPumpOn ? Color.red : Color.green)
                         .frame(width: 150, height: 150)
                         .shadow(
-                            color: (bluetoothManager.deviceState.isPumpOn ? Color.red : Color.green).opacity(0.4),
+                            color: (isPumpOn ? Color.red : Color.green).opacity(0.4),
                             radius: 20,
                             x: 0,
                             y: 10
                         )
 
                     VStack(spacing: 8) {
-                        Image(systemName: bluetoothManager.deviceState.isPumpOn ? "stop.fill" : "power")
+                        Image(systemName: isPumpOn ? "stop.fill" : "power")
                             .font(.system(size: 40, weight: .bold))
                             .foregroundColor(.white)
 
-                        Text(bluetoothManager.deviceState.isPumpOn ? "TURN OFF" : "TURN ON")
+                        Text(isPumpOn ? "TURN OFF" : "TURN ON")
                             .font(.system(size: 16, weight: .bold))
                             .foregroundColor(.white)
                     }
                 }
             }
             .disabled(bluetoothManager.deviceState.safetyShutoff)
+            .id(refreshTrigger)
 
             // Control source indicator
             if bluetoothManager.deviceState.lastControlSource == .manual {
@@ -156,6 +158,18 @@ struct PumpControlCard: View {
                 .fill(Color(.systemBackground))
                 .shadow(color: Color.black.opacity(0.05), radius: 10, x: 0, y: 5)
         )
+        .onAppear {
+            isPumpOn = bluetoothManager.deviceState.isPumpOn
+        }
+        .onChange(of: bluetoothManager.deviceState.isPumpOn) { newValue in
+            print("[PumpControlCard] isPumpOn changed: \(isPumpOn) -> \(newValue)")
+            isPumpOn = newValue
+            refreshTrigger = UUID()
+        }
+        .onChange(of: bluetoothManager.deviceState.refreshID) { _ in
+            isPumpOn = bluetoothManager.deviceState.isPumpOn
+            refreshTrigger = UUID()
+        }
     }
 }
 
@@ -164,6 +178,7 @@ struct PumpControlCard: View {
 struct SpeedControlCard: View {
     @EnvironmentObject var bluetoothManager: BluetoothManager
     @State private var tempSpeed: Double = 180
+    @State private var isEditing: Bool = false
 
     var body: some View {
         VStack(spacing: 20) {
@@ -177,7 +192,7 @@ struct SpeedControlCard: View {
 
                 Spacer()
 
-                Text("\(bluetoothManager.deviceState.speedPercentage)%")
+                Text("\(Int((tempSpeed / 255.0) * 100.0))%")
                     .font(.system(size: 24, weight: .bold))
                     .foregroundColor(.blue)
             }
@@ -189,8 +204,8 @@ struct SpeedControlCard: View {
                     in: 0...255,
                     step: 1,
                     onEditingChanged: { editing in
+                        isEditing = editing
                         if !editing {
-                            // Send command when user releases slider
                             bluetoothManager.setPumpSpeed(Int(tempSpeed))
                         }
                     }
@@ -233,7 +248,9 @@ struct SpeedControlCard: View {
             tempSpeed = Double(bluetoothManager.deviceState.pumpSpeed)
         }
         .onChange(of: bluetoothManager.deviceState.pumpSpeed) { newSpeed in
-            tempSpeed = Double(newSpeed)
+            if !isEditing {
+                tempSpeed = Double(newSpeed)
+            }
         }
     }
 }
@@ -242,6 +259,9 @@ struct SpeedControlCard: View {
 
 struct WaterTemperatureCard: View {
     @EnvironmentObject var bluetoothManager: BluetoothManager
+    @State private var displayTemp: Double = 0.0
+
+    let timer = Timer.publish(every: 0.1, on: .main, in: .common).autoconnect()
 
     var body: some View {
         VStack(spacing: 15) {
@@ -255,12 +275,11 @@ struct WaterTemperatureCard: View {
 
                 Spacer()
 
-                Text(bluetoothManager.deviceState.formattedWaterTemperature)
+                Text(String(format: "%.1f°C", displayTemp))
                     .font(.system(size: 24, weight: .bold))
                     .foregroundColor(temperatureColor)
             }
 
-            // Temperature range indicator
             HStack(spacing: 15) {
                 VStack(alignment: .leading, spacing: 4) {
                     Text("Target Range")
@@ -274,7 +293,6 @@ struct WaterTemperatureCard: View {
 
                 Spacer()
 
-                // Temperature status indicator
                 HStack(spacing: 6) {
                     Circle()
                         .fill(temperatureColor)
@@ -298,30 +316,32 @@ struct WaterTemperatureCard: View {
                 .fill(Color(.systemBackground))
                 .shadow(color: Color.black.opacity(0.05), radius: 10, x: 0, y: 5)
         )
+        .onReceive(timer) { _ in
+            displayTemp = bluetoothManager.deviceState.waterTemperature
+        }
+        .onAppear {
+            displayTemp = bluetoothManager.deviceState.waterTemperature
+        }
     }
 
     private var temperatureColor: Color {
-        let temp = bluetoothManager.deviceState.waterTemperature
-
-        if temp == 0 {
+        if displayTemp == 0 {
             return .gray
-        } else if temp > 0 && temp <= 15 {
-            return .blue // Optimal cold water
-        } else if temp > 15 && temp <= 25 {
-            return .orange // Getting warm
+        } else if displayTemp > 0 && displayTemp <= 15 {
+            return .blue
+        } else if displayTemp > 15 && displayTemp <= 25 {
+            return .orange
         } else {
-            return .red // Too warm
+            return .red
         }
     }
 
     private var temperatureStatus: String {
-        let temp = bluetoothManager.deviceState.waterTemperature
-
-        if temp == 0 {
+        if displayTemp == 0 {
             return "No Data"
-        } else if temp > 0 && temp <= 15 {
+        } else if displayTemp > 0 && displayTemp <= 15 {
             return "Optimal"
-        } else if temp > 15 && temp <= 25 {
+        } else if displayTemp > 15 && displayTemp <= 25 {
             return "Warming Up"
         } else {
             return "Too Warm"
@@ -333,6 +353,9 @@ struct WaterTemperatureCard: View {
 
 struct SkinTemperatureCard: View {
     @EnvironmentObject var bluetoothManager: BluetoothManager
+    @State private var displayTemp: Double = 0.0
+
+    let timer = Timer.publish(every: 0.1, on: .main, in: .common).autoconnect()
 
     var body: some View {
         VStack(spacing: 15) {
@@ -346,12 +369,11 @@ struct SkinTemperatureCard: View {
 
                 Spacer()
 
-                Text(bluetoothManager.deviceState.formattedSkinTemperature)
+                Text(String(format: "%.1f°C", displayTemp))
                     .font(.system(size: 24, weight: .bold))
                     .foregroundColor(temperatureColor)
             }
 
-            // Temperature range indicator
             HStack(spacing: 15) {
                 VStack(alignment: .leading, spacing: 4) {
                     Text("Target Range")
@@ -365,7 +387,6 @@ struct SkinTemperatureCard: View {
 
                 Spacer()
 
-                // Temperature status indicator
                 HStack(spacing: 6) {
                     Circle()
                         .fill(temperatureColor)
@@ -389,34 +410,36 @@ struct SkinTemperatureCard: View {
                 .fill(Color(.systemBackground))
                 .shadow(color: Color.black.opacity(0.05), radius: 10, x: 0, y: 5)
         )
+        .onReceive(timer) { _ in
+            displayTemp = bluetoothManager.deviceState.skinTemperature
+        }
+        .onAppear {
+            displayTemp = bluetoothManager.deviceState.skinTemperature
+        }
     }
 
     private var temperatureColor: Color {
-        let temp = bluetoothManager.deviceState.skinTemperature
-
-        if temp == 0 {
+        if displayTemp == 0 {
             return .gray
-        } else if temp >= 34 && temp <= 35 {
-            return .green // Optimal scrotal temp
-        } else if temp > 35 && temp < 40 {
-            return .orange // Warm
-        } else if temp >= 40 {
-            return .red // Too hot - danger!
+        } else if displayTemp >= 34 && displayTemp <= 35 {
+            return .green
+        } else if displayTemp > 35 && displayTemp < 40 {
+            return .orange
+        } else if displayTemp >= 40 {
+            return .red
         } else {
-            return .blue // Too cold
+            return .blue
         }
     }
 
     private var temperatureStatus: String {
-        let temp = bluetoothManager.deviceState.skinTemperature
-
-        if temp == 0 {
+        if displayTemp == 0 {
             return "No Data"
-        } else if temp >= 34 && temp <= 35 {
+        } else if displayTemp >= 34 && displayTemp <= 35 {
             return "Optimal"
-        } else if temp > 35 && temp < 40 {
+        } else if displayTemp > 35 && displayTemp < 40 {
             return "Warm"
-        } else if temp >= 40 {
+        } else if displayTemp >= 40 {
             return "Too Hot!"
         } else {
             return "Cool"
@@ -460,8 +483,6 @@ struct ErrorBanner: View {
         )
     }
 }
-
-// MARK: - Preview
 
 struct PumpControlView_Previews: PreviewProvider {
     static var previews: some View {

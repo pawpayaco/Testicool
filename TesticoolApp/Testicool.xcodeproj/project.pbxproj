@@ -15,6 +15,10 @@
 		A289601B9DDD440DBD7B5262 /* DeviceState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7DA09B2CA31748209EED1963 /* DeviceState.swift */; };
 		ADB55532D43D4CB3A2576B65 /* StatusParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2C457B8B0A324C8995DE24F7 /* StatusParser.swift */; };
 		B57BCFF9AAD9405FA0681A4E /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = FEC9C6F543594008B08BFB32 /* Assets.xcassets */; };
+		E639E39C2EAAFED000CCEA98 /* PumpController.swift in Sources */ = {isa = PBXBuildFile; fileRef = E639E3992EAAFED000CCEA98 /* PumpController.swift */; };
+		E639E39D2EAAFED000CCEA98 /* SPPBluetoothManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = E639E39B2EAAFED000CCEA98 /* SPPBluetoothManager.swift */; };
+		E639E39E2EAAFED000CCEA98 /* SessionManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = E639E39A2EAAFED000CCEA98 /* SessionManager.swift */; };
+		E639E3A02EAAFEE500CCEA98 /* SPPMainView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E639E39F2EAAFEE500CCEA98 /* SPPMainView.swift */; };
 		EB356F8768CB42FCA923458D /* PumpControlView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 25CC4A9FDE1D4A30992B79F5 /* PumpControlView.swift */; };
 /* End PBXBuildFile section */
 
@@ -28,6 +32,10 @@
 		6339E7ABE5E94E78913EEF8B /* TesticoolApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TesticoolApp.swift; sourceTree = "<group>"; };
 		7DA09B2CA31748209EED1963 /* DeviceState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceState.swift; sourceTree = "<group>"; };
 		9A1C36C686414DC39A8DC664 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
+		E639E3992EAAFED000CCEA98 /* PumpController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PumpController.swift; sourceTree = "<group>"; };
+		E639E39A2EAAFED000CCEA98 /* SessionManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionManager.swift; sourceTree = "<group>"; };
+		E639E39B2EAAFED000CCEA98 /* SPPBluetoothManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SPPBluetoothManager.swift; sourceTree = "<group>"; };
+		E639E39F2EAAFEE500CCEA98 /* SPPMainView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SPPMainView.swift; sourceTree = "<group>"; };
 		EFCC2C7C8033478BBD9470B2 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		FEC9C6F543594008B08BFB32 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -54,6 +62,9 @@
 		9567C4C1B49746B28F61B6FD /* Managers */ = {
 			isa = PBXGroup;
 			children = (
+				E639E3992EAAFED000CCEA98 /* PumpController.swift */,
+				E639E39A2EAAFED000CCEA98 /* SessionManager.swift */,
+				E639E39B2EAAFED000CCEA98 /* SPPBluetoothManager.swift */,
 				0C34CBC2AD7E436A8F3ED123 /* BluetoothManager.swift */,
 			);
 			path = Managers;
@@ -62,6 +73,7 @@
 		C6800657033947E6ACF1C288 /* Views */ = {
 			isa = PBXGroup;
 			children = (
+				E639E39F2EAAFEE500CCEA98 /* SPPMainView.swift */,
 				25CC4A9FDE1D4A30992B79F5 /* PumpControlView.swift */,
 				2AC82EB0127D4B24BD67738D /* StatusView.swift */,
 				9A1C36C686414DC39A8DC664 /* SettingsView.swift */,
@@ -176,7 +188,11 @@
 				49A929115EEB42A681541FDE /* TesticoolApp.swift in Sources */,
 				9A91C1DC877E4DEC873C9F8B /* BluetoothManager.swift in Sources */,
 				ADB55532D43D4CB3A2576B65 /* StatusParser.swift in Sources */,
+				E639E39C2EAAFED000CCEA98 /* PumpController.swift in Sources */,
+				E639E39D2EAAFED000CCEA98 /* SPPBluetoothManager.swift in Sources */,
+				E639E39E2EAAFED000CCEA98 /* SessionManager.swift in Sources */,
 				8B5A9969F65D4059B85D8952 /* SettingsView.swift in Sources */,
+				E639E3A02EAAFEE500CCEA98 /* SPPMainView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
